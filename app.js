@@ -2,7 +2,7 @@ var express = require('express');
 var app = express();
 
 app.get('/', function(llamado, respuesta){
-  respuesta.send(200,"hi");
+  respuesta.send(200,"hello");
 });
 
 // Start server
