@@ -1,0 +1,190 @@
+const { db } = require('../repository/models/dna');
+var repository = require('../repository/scripts');
+
+module.exports.checkIsMutant = function (dna) {
+    var db = repository.add(dna);
+    return this.isMutant(dna);
+  };
+ 
+
+module.exports.isValid = function (dna)  {
+
+    if (dna == null) {
+      return false;
+    }
+
+    if (dna.length == 0){
+      return false;
+    }
+
+    //Verifico que las palabras solo contengan ACTG
+    var N = dna.length;
+
+    for (i = 0; i < N; i++) {
+      if (!/\b[ACTG]+\b/.test(dna[i])) {
+        return false;
+      }
+    };
+
+    // Verifico que sea matriz NxN
+    for (i = 0; i < N; i++) {
+      if (dna[i].length != N) {
+        return false;
+      }
+    }
+
+    return true;
+  }; 
+
+  module.exports.stats = async function () {
+
+      var dbaResult = await repository.findAll();
+      var total = dbaResult.length;
+      var mutants = 0;
+      for(var i = 0; i < dbaResult.length; i++) {
+          if (this.isMutant(dbaResult[i].sequences)) {
+            mutants += 1;
+          }
+        
+      }
+
+      return result = {
+        count_human_dna:  total,
+        count_mutant_dna: mutants,
+        ratio: mutants/total
+      }
+  };
+
+
+  function isCandidateForMutant(word) {
+
+    var total_A = word.toUpperCase().indexOf('AAAA');
+    var total_C = word.toUpperCase().indexOf('CCCC');
+    var total_G = word.toUpperCase().indexOf('GGGG');
+    var total_T = word.toUpperCase().indexOf('TTTT');
+
+    var total = 0;
+    total += total_A > -1 ? 1 : 0;
+    total += total_C > -1 ? 1 : 0;
+    total += total_G > -1 ? 1 : 0;
+    total += total_T > -1 ? 1 : 0;
+
+    return (total);
+    
+  };
+
+  module.exports.isMutant = function (dna) {
+
+    var result = createArray(dna);
+
+    var total = readRows(result);
+    if (total > 1) {
+      return true;
+    }
+
+    total += readColumns(result);
+    if (total > 1) {
+      return true;
+    }
+    
+    total += readDiagonals(result);
+    if (total > 1) {
+      return true;
+    }
+
+    return false;
+  };
+
+  function readDiagonals(matriz) {
+
+    var total = 0;
+    var max = matriz.length - 1;
+
+    for(diag=max; diag>0; diag--) {
+      var palabra = '';
+      for(x=0, y=diag; y<max; x++, y++) {
+        palabra += matriz[x][y];
+      }
+      var repeticiones = isCandidateForMutant (palabra);
+      total += repeticiones;
+    }
+
+    
+
+    for(diag=0; diag<=max; diag++) {
+      var palabra = '';
+      for(y=0, x=diag; x<=max; x++, y++) {
+        palabra += matriz[x][y];
+      }
+      var repeticiones = isCandidateForMutant (palabra);
+      total += repeticiones;
+    }
+
+    for(diag=0; diag<=max; diag++) {
+      var palabra = '';
+      for(x=0, y=diag; y>=0; x++, y--) {
+        palabra += matriz[x][y];
+      }
+      var repeticiones = isCandidateForMutant (palabra);
+      total += repeticiones;
+    }
+
+    for(diag=max; diag>=1; diag--) {
+      var palabra = '';
+      for(x=max, y=diag; x>=diag; y++, x--) {
+        palabra += matriz[x][y];
+      }
+      var repeticiones = isCandidateForMutant (palabra);
+      total += repeticiones;
+    }
+  
+    return total;
+  }
+
+
+
+  function readRows(arrayFilas) {
+    var total = 0;
+    
+    for (i = 0; i < arrayFilas.length; i++) {
+      var palabra = '';
+      for(var j=0; j < arrayFilas[i].length; j++) {
+        palabra += arrayFilas[i][j];
+      }
+      var repeticiones = isCandidateForMutant(palabra);
+      total += repeticiones;
+    }
+
+    return total;
+  }
+
+  function readColumns(matriz) {
+    var total = 0;
+    
+    for (i = 0; i < matriz.length; i++) {
+      var palabra = '';
+      for(var j=0; j < matriz[i].length; j++) {
+        palabra += matriz[j][i];
+      }
+      var repeticiones = isCandidateForMutant (palabra);
+      total += repeticiones;
+    }
+
+    return total;
+  }
+
+
+function createArray(dna) {
+
+  var matriz = new Array(dna.length);
+  var columnasCount = dna[0].length;
+    
+  for (i = 0; i < matriz.length; i++) {
+    matriz[i] = new Array(columnasCount);
+    for(var j=0; j < matriz[i].length; j++) {
+      matriz[i][j] = dna[i][j];
+    }
+  }
+  
+  return matriz;
+}

@@ -2,13 +2,19 @@
     "name": "node-api-rest-proyecto-mutante",
     "version": "1.0.0",
     "dependencies": {
-    "express": "^4.7.1"
+        "express": "^4.7.1",
+        "mongodb": "^4.8.0",
+        "mongoose": "^6.4.7"
     },
-    "author" : "Andrea Fuhr",
-    "scripts":{
-        "start" : "node app.js"
+    "author": "Andrea Fuhr",
+    "scripts": {
+        "start": "app.js", 
+        "test": "jest --coverage"
     },
     "engines": {
-          "node": "16.x.x"
-        }
+        "node": "16.x.x"
+    },
+    "devDependencies": {
+        "jest": "^0.14.1"
+    }
 }
